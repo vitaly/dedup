@@ -6,9 +6,9 @@ function usage()
 {
   cat <<END
 Usage:
-  dedup index INDEX DIRECTORY [...]
-  dedup find DIRECTORY INDEX [...]
-  dedup move FROM TO INDEX [...]
+dedup index INDEX DIRECTORY [...]           - index files in DIRECTORY(IES), store index in INDEX
+  dedup find DIRECTORY INDEX [...]          - print duplicated files in DIRECTORY according to INDEX(ES)
+  dedup move FROM TO INDEX [...]            - move duplicates from FROM to TO according to INDEX(ES)
 END
   exit
 }
