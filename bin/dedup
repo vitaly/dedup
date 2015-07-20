@@ -45,12 +45,12 @@ function find_dups()
 
   local args=$(parse "$@")
 
-  md5deep -o f -rl $args $directory
+  (set -x; md5deep -o f -rl $args $directory)
 }
 
 function move_dups()
 {
-  [ "$#" -lt 2 ] && usage
+  [ "$#" -lt 3 ] && usage
 
   local from="$1"; shift
   local to="$1"; shift
@@ -60,15 +60,11 @@ function move_dups()
   [ ! -e "$to" ] && mkdir "$to"
   [ ! -d "$to" ] && die "'$to' is not a directory"
 
-  #from=$(cd "$from";pwd)
-  #to=$(cd "$to";pwd)
-
-  #echo from: $from
-  #echo to: $to
-
-  find_dups "$from" "$@" -0 | xargs -0 -n1 dirname | uniq | xargs -I {} mkdir -p "$to/{}"
-
-  find_dups "$from" "$@" -0 | xargs -0 -I {} mv "{}" "$to/{}"
+  find_dups "$from" "$@" |\
+    while read f; do
+      mkdir -vp "$to/$(dirname "$f")"
+      mv -v "$f" "$to/$f"
+    done
 }
 
 
