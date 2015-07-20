@@ -6,8 +6,9 @@ function usage()
 {
   cat <<END
 Usage:
-  dedup index INDEX DIRECTORY DIRECTORY ...
-  dedup find DIRECTORY INDDEX ...
+  dedup index INDEX DIRECTORY [...]
+  dedup find DIRECTORY INDEX [...]
+  dedup move FROM TO INDEX [...]
 END
   exit
 }
@@ -20,24 +21,54 @@ function index()
 
   [ -e "$index" ] && die "$index already exists"
 
-  md5deep -r "$@" > "$index"
+  md5deep -o f -r "$@" > "$index"
 }
 
-function args() {
+function parse() {
   for a in "$@"; do
-    echo -m "$a"
+    if [ '-0' == "$a" ]; then
+      echo "$a"
+    else
+      [ -f "$a" ] || die "'$a' is not a file"
+      echo -m "$a"
+    fi
   done
 }
 
 function find_dups()
 {
-  [ -z "$1" -o -z "$2" ] && usage
+  [ "$#" -lt 2 ] && usage
 
   local directory="$1"; shift
 
   [ -d "$directory" ] || die "$directory is not a directory"
 
-  md5deep -rl $(args "$@") $directory
+  local args=$(parse "$@")
+
+  md5deep -o f -rl $args $directory
+}
+
+function move_dups()
+{
+  [ "$#" -lt 2 ] && usage
+
+  local from="$1"; shift
+  local to="$1"; shift
+
+  [ ! -d "$from" ] && die "'$from' is not a directory"
+
+  [ ! -e "$to" ] && mkdir "$to"
+  [ ! -d "$to" ] && die "'$to' is not a directory"
+
+  #from=$(cd "$from";pwd)
+  #to=$(cd "$to";pwd)
+
+  #echo from: $from
+  #echo to: $to
+
+  find_dups "$from" "$@" -0 | xargs -0 -n1 dirname | uniq | xargs -I {} mkdir -p "$to/{}"
+
+  find_dups "$from" "$@" -0 | xargs -0 -I {} mv "{}" "$to/{}"
 }
 
 
@@ -45,5 +76,6 @@ cmd="$1"; shift
 case "$cmd" in
   index) index "$@";;
   find) find_dups "$@";;
+  move) move_dups "$@";;
   *) usage;;
 esac
