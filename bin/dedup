@@ -63,7 +63,7 @@ function move_dups()
   find_dups "$from" "$@" |\
     while read f; do
       mkdir -vp "$to/$(dirname "$f")"
-      mv -v "$f" "$to/$f"
+      mv -vn "$f" "$to/$f"
     done
 }
 
