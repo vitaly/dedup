@@ -54,7 +54,7 @@ function find_dups()
 
   local args=$(parse "$@")
 
-  md5deep $OPTS -o f -rl $args $directory
+  md5deep $OPTS -o f -rl $args "$directory"
 }
 
 function move_dups()

@@ -40,30 +40,26 @@ function dir_should_have_no_fies()
 
   find "$d" -type d -empty -delete
 
-  [ ! -d "$d" ] || (tree "$d" && error "$N: expected '$d' to have no files")
+  [ ! -d "$d" ] || (tree "$d" && die "$N: expected '$d' to have no files")
 }
 
 function file_should_exist()
 {
-    [ -e "$1" ] || error "$N: '$1' not found"
+    [ -e "$1" ] || die "$N: '$1' not found"
 }
 
 function file_should_not_exist()
 {
-    [ -e "$1" ] && error "$N: '$1' found"
+    [ -e "$1" ] && die "$N: '$1' found"
 }
+
+# TEST CASES
 
 function move_should_move_duplicates()
 {
   N="MOVE should move duplicates"
   rm -rf 3 4
 
-  # 3
-  # ├── a
-  # ├── b
-  # ├── c
-  # ├── d
-  # └── e
   mkdir 3
   echo 123 > 3/a
   echo 123 > 3/b
@@ -73,13 +69,13 @@ function move_should_move_duplicates()
 
   dedup move 3 4 i1 i2
 
-  # we expect 3 to be empty
-  rmdir 3 || (tree 3 && error "$N: expected 3 to be empty")
+  dir_should_have_no_fies 3
 
-  # expect files to be moved
-  for f in a b c d e; do
-    file_should_exist "4/3/$f"
-  done
+  file_should_exist "4/3/$f/a"
+  file_should_exist "4/3/$f/b"
+  file_should_exist "4/3/$f/c"
+  file_should_exist "4/3/$f/d"
+  file_should_exist "4/3/$f/e"
 
   ok "$N"
 }
@@ -99,13 +95,10 @@ function move_should_preserve_uniques()
 
   dedup move 3 4 i1 i2
 
-  # we expect 4 to be empty
-  rmdir 4 || (tree 4 && error "$N: expected 4 to be empty")
+  dir_should_have_no_fies 4
 
-  # expect files to be moved
-  for f in a b; do
-    file_should_exist "3/$f"
-  done
+  file_should_exist "3/$f/a"
+  file_should_exist "3/$f/b"
 
   ok "$N"
 
@@ -114,23 +107,24 @@ function move_should_preserve_uniques()
 function move_should_process_weird_paths()
 {
   N="MOVE should process weird paths"
-  rm -rf 3 4
+  local base="5 ' 6"
+  rm -rf 4 "$base"
 
   local d="a A/b ' B"
   local f="a A ' b"
 
-  # 3
+  # b\ '\ 6
   # └── a\ A
   #     └── b\ '\ B
   #         └── a\ A\ '\ b
-  mkdir -p "3/$d"
-  echo 123 > "3/$d/$f"
+  mkdir -p "$base/$d"
+  echo 123 > "$base/$d/$f"
 
-  dedup move 3 4 i1 i2
+  dedup move "$base" 4 i1 i2
 
-  dir_should_have_no_fies 3
+  dir_should_have_no_fies "$base"
 
-  file_should_exist "4/3/$d/$f"
+  file_should_exist "4/$base/$d/$f"
 
   ok "$N"
 }
@@ -174,16 +168,17 @@ function delete_should_remove_dups()
 function delete_should_remove_weird_paths()
 {
   N="DELETE should remove weird paths"
-  rm -rf 3
+  local base="5 ' 6"
+  rm -rf "$base"
 
   local d="a A/b ' B"
   local f="a A ' b"
-  mkdir -p "3/$d"
-  echo 123 > "3/$d/$f"
+  mkdir -p "$base/$d"
+  echo 123 > "$base/$d/$f"
 
-  dedup delete 3 i1 i2
+  dedup delete "$base" i1 i2
 
-  dir_should_have_no_fies 3
+  dir_should_have_no_fies "$base"
 
   ok "$N"
 }
