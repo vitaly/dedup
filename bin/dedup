@@ -2,6 +2,14 @@
 
 function die() { echo "$@"; exit 1; }
 
+if [ '-v' = "$1" ]; then
+  shift
+  V=v
+else
+  V=
+fi
+function l() { [ -n "$V" ] && echo "$@"; }
+
 function usage()
 {
   cat <<END
@@ -35,6 +43,7 @@ function parse() {
   done
 }
 
+OPTS=""
 function find_dups()
 {
   [ "$#" -lt 2 ] && usage
@@ -45,7 +54,7 @@ function find_dups()
 
   local args=$(parse "$@")
 
-  (set -x; md5deep -o f -rl $args $directory)
+  md5deep $OPTS -o f -rl $args $directory
 }
 
 function move_dups()
@@ -62,16 +71,21 @@ function move_dups()
 
   find_dups "$from" "$@" |\
     while read f; do
-      mkdir -vp "$to/$(dirname "$f")"
-      mv -vn "$f" "$to/$f"
+      mkdir -${V}p "$to/$(dirname "$f")"
+      mv -${V}n "$f" "$to/$f"
     done
 }
 
+function delete_dups()
+{
+  OPTS=-0 find_dups "$@" | xargs -0 rm -${V}f
+}
 
 cmd="$1"; shift
 case "$cmd" in
   index) index "$@";;
   find) find_dups "$@";;
   move) move_dups "$@";;
+  delete) delete_dups "$@";;
   *) usage;;
 esac

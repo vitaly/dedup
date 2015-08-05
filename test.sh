@@ -154,9 +154,64 @@ function move_should_process_long_file_names()
   ok "$N"
 }
 
+function delete_should_remove_dups()
+{
+  N="DELETE should remove dups"
+  rm -rf 3
+  mkdir 3
+  echo 123 > 3/1
+  echo 456 > 3/2
+  echo aaa > 3/3
+  echo bbb > 3/4
+
+  dedup delete 3 i1 i2
+
+  dir_should_have_no_fies 3
+
+  ok "$N"
+}
+
+function delete_should_remove_weird_paths()
+{
+  N="DELETE should remove weird paths"
+  rm -rf 3
+
+  local d="a A/b ' B"
+  local f="a A ' b"
+  mkdir -p "3/$d"
+  echo 123 > "3/$d/$f"
+
+  dedup delete 3 i1 i2
+
+  dir_should_have_no_fies 3
+
+  ok "$N"
+}
+
+function delete_should_remove_long_file_names()
+{
+  N="DELETE should remove logn file names"
+  rm -rf 3 4
+
+  local f="xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+
+  mkdir 3
+  echo 123 > "3/$f"
+
+  dedup delete 3 i1 i2
+
+  dir_should_have_no_fies 3
+
+  ok "$N"
+}
 
 info "####### MOVE"
 move_should_move_duplicates
 move_should_preserve_uniques
 move_should_process_weird_paths
 move_should_process_long_file_names
+
+info "####### DELETE"
+delete_should_remove_dups
+delete_should_remove_weird_paths
+delete_should_remove_long_file_names
