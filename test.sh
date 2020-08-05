@@ -18,6 +18,9 @@ function warn() { echo -e "\n${BG_YELLOW}${BLACK}WARNING:${NC}${YELLOW}${BOLD} $
 function error() { echo -e "\n${BG_RED}${BLACK}ERROR:${NC}${RED}${BOLD} $@${NC}\n\n"; }
 function die() { error "$@"; exit 1; }
 
+# PATH
+export PATH="$PWD/bin:$PATH"
+
 # TEST DIR
 rm -rf tmp/test; mkdir -p tmp/test; cd tmp/test
 
@@ -131,7 +134,7 @@ function move_should_process_weird_paths()
 
 function move_should_process_long_file_names()
 {
-  N="MOVE should process logn file names"
+  N="MOVE should process long file names"
   rm -rf 3 4
 
   local f="xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
